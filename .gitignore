@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+videos
+.claude
+*.mov
+*.MOV
+playground/public/*
+!playground/public/shibuya.mp4
