@@ -10,11 +10,11 @@ export interface BlobTrackerProps extends Omit<UseBlobTrackerOptions, "onFrame">
   showEdges?: boolean;
   /** Show blob bounding boxes with centroid labels. Default: true */
   showBlobs?: boolean;
-  /** Edge line color. Default: { r: 179, g: 162, b: 255, a: 1 } */
+  /** Edge line color. Default: { r: 255, g: 255, b: 255, a: 1 } */
   edgeColor?: RGBA;
   /** Edge line width in pixels. Default: 2 */
   edgeWidth?: number;
-  /** Blob bounding box color. Default: { r: 0, g: 255, b: 255, a: 1 } */
+  /** Blob bounding box color. Default: { r: 255, g: 255, b: 255, a: 1 } */
   blobColor?: RGBA;
   /** Blob bounding box line width in pixels. Default: 2 */
   blobWidth?: number;
@@ -22,15 +22,21 @@ export interface BlobTrackerProps extends Omit<UseBlobTrackerOptions, "onFrame">
   showLabels?: boolean;
   /** Font for coordinate labels. Default: "12px monospace" */
   labelFont?: string;
-  /** Label text color. Default: { r: 0, g: 255, b: 255, a: 1 } */
+  /** Label text color. Default: { r: 255, g: 255, b: 255, a: 1 } */
   labelColor?: RGBA;
+  /** Edge line style. Default: "solid" */
+  edgeStyle?: "solid" | "dashed" | "dotted";
+  /** Blob bounding box style. Default: "rect" */
+  blobStyle?: "rect" | "corners";
+  /** Corner length as fraction of shorter box side (0-1). Only used when blobStyle is "corners". Default: 0.25 */
+  cornerLength?: number;
   /** CSS style for the container div */
   style?: React.CSSProperties;
 }
 
-const DEFAULT_EDGE_COLOR: RGBA = { r: 179, g: 162, b: 255, a: 1 };
-const DEFAULT_BLOB_COLOR: RGBA = { r: 0, g: 255, b: 255, a: 1 };
-const DEFAULT_LABEL_COLOR: RGBA = { r: 0, g: 255, b: 255, a: 1 };
+const DEFAULT_EDGE_COLOR: RGBA = { r: 255, g: 255, b: 255, a: 1 };
+const DEFAULT_BLOB_COLOR: RGBA = { r: 255, g: 255, b: 255, a: 1 };
+const DEFAULT_LABEL_COLOR: RGBA = { r: 255, g: 255, b: 255, a: 1 };
 
 /** Drop-in component: renders video with contour edges and blob bounding boxes overlaid. */
 export function BlobTracker({
@@ -44,14 +50,17 @@ export function BlobTracker({
   showLabels = true,
   labelFont = "12px monospace",
   labelColor = DEFAULT_LABEL_COLOR,
+  edgeStyle = "solid",
+  blobStyle = "rect",
+  cornerLength = 0.25,
   style,
   resolution,
   threshold,
   minBlobArea,
 }: BlobTrackerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const propsRef = useRef({ showEdges, showBlobs, edgeColor, edgeWidth, blobColor, blobWidth, showLabels, labelFont, labelColor });
-  propsRef.current = { showEdges, showBlobs, edgeColor, edgeWidth, blobColor, blobWidth, showLabels, labelFont, labelColor };
+  const propsRef = useRef({ showEdges, showBlobs, edgeColor, edgeWidth, blobColor, blobWidth, showLabels, labelFont, labelColor, edgeStyle, blobStyle, cornerLength });
+  propsRef.current = { showEdges, showBlobs, edgeColor, edgeWidth, blobColor, blobWidth, showLabels, labelFont, labelColor, edgeStyle, blobStyle, cornerLength };
 
   const onFrame = useCallback((ctx: CanvasRenderingContext2D, result: FrameResult, layout: FrameLayout) => {
     const { contours, blobs } = result;
@@ -99,6 +108,8 @@ export function BlobTracker({
         ctx.save();
         ctx.strokeStyle = toRGBAString(props.edgeColor);
         ctx.lineWidth = props.edgeWidth;
+        if (props.edgeStyle === "dashed") ctx.setLineDash([8, 4]);
+        else if (props.edgeStyle === "dotted") ctx.setLineDash([2, 4]);
         ctx.beginPath();
         ctx.moveTo(offsetX + allPts[0].x * scaleX, offsetY + allPts[0].y * scaleY);
         for (let i = 1; i < allPts.length; i++) {
@@ -128,7 +139,22 @@ export function BlobTracker({
         const by = offsetY + blob.boundingBox.y * scaleY;
         const bw = blob.boundingBox.w * scaleX;
         const bh = blob.boundingBox.h * scaleY;
-        ctx.strokeRect(bx, by, bw, bh);
+
+        if (props.blobStyle === "corners") {
+          const cl = Math.min(bw, bh) * props.cornerLength;
+          ctx.beginPath();
+          // top-left
+          ctx.moveTo(bx, by + cl); ctx.lineTo(bx, by); ctx.lineTo(bx + cl, by);
+          // top-right
+          ctx.moveTo(bx + bw - cl, by); ctx.lineTo(bx + bw, by); ctx.lineTo(bx + bw, by + cl);
+          // bottom-right
+          ctx.moveTo(bx + bw, by + bh - cl); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw - cl, by + bh);
+          // bottom-left
+          ctx.moveTo(bx + cl, by + bh); ctx.lineTo(bx, by + bh); ctx.lineTo(bx, by + bh - cl);
+          ctx.stroke();
+        } else {
+          ctx.strokeRect(bx, by, bw, bh);
+        }
 
         if (props.showLabels) {
           const cx = (offsetX + blob.centroid.x * scaleX).toFixed(1);

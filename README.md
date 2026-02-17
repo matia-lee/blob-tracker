@@ -24,13 +24,16 @@ import { BlobTracker } from "blob-tracker";
 | `resolution?` | `number` | `120` |
 | `showEdges?` | `boolean` | `true` |
 | `showBlobs?` | `boolean` | `true` |
-| `edgeColor?` | `RGBA` | `{ r: 179, g: 162, b: 255, a: 1 }` |
+| `edgeColor?` | `RGBA` | `{ r: 255, g: 255, b: 255, a: 1 }` |
 | `edgeWidth?` | `number` | `2` |
-| `blobColor?` | `RGBA` | `{ r: 0, g: 255, b: 255, a: 1 }` |
+| `edgeStyle?` | `"solid" \| "dashed" \| "dotted"` | `"solid"` |
+| `blobColor?` | `RGBA` | `{ r: 255, g: 255, b: 255, a: 1 }` |
 | `blobWidth?` | `number` | `2` |
+| `blobStyle?` | `"rect" \| "corners"` | `"rect"` |
+| `cornerLength?` | `number` | `0.25` |
 | `showLabels?` | `boolean` | `true` |
 | `labelFont?` | `string` | `"12px monospace"` |
-| `labelColor?` | `RGBA` | `{ r: 0, g: 255, b: 255, a: 1 }` |
+| `labelColor?` | `RGBA` | `{ r: 255, g: 255, b: 255, a: 1 }` |
 | `style?` | `CSSProperties` | none |
 
 ## `useBlobTracker()`

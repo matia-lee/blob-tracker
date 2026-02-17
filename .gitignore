@@ -6,4 +6,4 @@ videos
 *.mov
 *.MOV
 playground/public/*
-!playground/public/shibuya.mp4
+!playground/public/subway.mp4

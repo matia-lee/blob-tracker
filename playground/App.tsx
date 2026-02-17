@@ -2,23 +2,32 @@ import { useState } from "react";
 import { BlobTracker } from "../src/BlobTracker";
 
 export function App() {
-  const [threshold, setThreshold] = useState(20);
+  const [threshold, setThreshold] = useState(30);
   const [minBlobArea, setMinBlobArea] = useState(10);
   const [edgeWidth, setEdgeWidth] = useState(2.5);
-  const [blobWidth, setBlobWidth] = useState(3);
+  const [blobWidth, setBlobWidth] = useState(4);
   const [showLabels, setShowLabels] = useState(true);
   const [labelSize, setLabelSize] = useState(12);
+  const [edgeStyle, setEdgeStyle] = useState<"solid" | "dashed" | "dotted">("dotted");
+  const [blobStyle, setBlobStyle] = useState<"rect" | "corners">("corners");
+  const [cornerLength, setCornerLength] = useState(0.25);
 
   return (
     <div style={{ width: "100vw", height: "100vh", position: "relative" }}>
       <BlobTracker
-        src="/shibuya.mp4"
+        src="/subway.mp4"
         threshold={threshold}
         minBlobArea={minBlobArea}
+        edgeColor={{ r: 255, g: 255, b: 255, a: 1 }}
         edgeWidth={edgeWidth}
+        blobColor={{ r: 255, g: 255, b: 255, a: 1 }}
         blobWidth={blobWidth}
         showLabels={showLabels}
+        labelColor={{ r: 255, g: 255, b: 255, a: 1 }}
         labelFont={`${labelSize}px monospace`}
+        edgeStyle={edgeStyle}
+        blobStyle={blobStyle}
+        cornerLength={cornerLength}
       />
       <div
         style={{
@@ -69,6 +78,33 @@ export function App() {
             label size: {labelSize}px
             <input type="range" min="6" max="32" value={labelSize}
               onChange={(e) => setLabelSize(+e.target.value)}
+              style={{ width: "100%" }} />
+          </label>
+        )}
+        <label>
+          edge style:{" "}
+          <select value={edgeStyle}
+            onChange={(e) => setEdgeStyle(e.target.value as "solid" | "dashed" | "dotted")}
+            style={{ background: "#333", color: "white", border: "1px solid #555", padding: "2px 4px" }}>
+            <option value="solid">solid</option>
+            <option value="dashed">dashed</option>
+            <option value="dotted">dotted</option>
+          </select>
+        </label>
+        <label>
+          blob style:{" "}
+          <select value={blobStyle}
+            onChange={(e) => setBlobStyle(e.target.value as "rect" | "corners")}
+            style={{ background: "#333", color: "white", border: "1px solid #555", padding: "2px 4px" }}>
+            <option value="rect">rect</option>
+            <option value="corners">corners</option>
+          </select>
+        </label>
+        {blobStyle === "corners" && (
+          <label>
+            corner length: {cornerLength}
+            <input type="range" min="0.1" max="0.5" step="0.05" value={cornerLength}
+              onChange={(e) => setCornerLength(+e.target.value)}
               style={{ width: "100%" }} />
           </label>
         )}
